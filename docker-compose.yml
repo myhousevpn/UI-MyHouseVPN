@@ -1,14 +1,10 @@
-version: "3.3"
+version: "1.1"
 services:
-  pivpn-web:
-    image: weejewel/pivpn-web
-    container_name: pivpn-web
+  myhousevpn-ui:
+    image: myhousevpn-ui
+    container_name: myhousevpn-ui
     ports:
-      - "51821:51821"
+      - "51821:51821" # Maps port 51821 on the host to port 51821 in the container
     restart: unless-stopped
     environment:
-      # Uncomment this to connect to a remote PiVPN host
-      # - SSH_HOST=192.168.1.2
-      # - SSH_PORT=22
-      # Uncomment this to enable support for 2FA login
-      # - ENABLE_2FA=yes
+      DEBUG: "Server,SSH"
