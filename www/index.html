@@ -1,361 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>MyHouseVPN</title>
-  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="img/favicon.png">
-  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>VPN Device Manager</title>
+    <link rel="icon" type="image/x-icon" href="img/logo.ico">
+    <link rel="stylesheet" href="vpnmanager.css">
 </head>
 
-<body class="bg-gray-50">
-  <div id="app" class="container mx-auto">
-    <div v-if="authenticated === true">
-      <h1 class="text-4xl font-medium mt-10 mb-2">MyHouseVPN</h1>
-      <h2 class="text-sm text-gray-400 mb-10">{{username}}@{{hostname}} · <span class="cursor-pointer hover:underline" @click="logout">
-        Logout
-        <svg class="h-3 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-      </span></h2>
+<body>
+    <header>
+        <a onclick="redirectToPort80()" class="logo">
+            <img src="img/logo.png" alt="Logo" title="Click here to navigate to the current URL on port 80." style="width: 48px; height: 48px;">
+        </a>
+        <h1 class="header-title">VPN Device Manager</h1>
+    </header>
 
-      <div class="shadow-md rounded-lg bg-white overflow-hidden">
-        <div class="flex flex-row flex-auto items-center p-3 px-5 border border-b-2 border-gray-100">
-          <div class="flex-grow">
-            <p class="text-2xl font-medium">Clients</p>
-          </div>
-          <div class="flex-shrink-0">
-            <button @click="clientCreate = true; clientCreateName = '';"
-              class="hover:bg-green-400 hover:border-green-400 hover:text-white text-gray-700 border-2 border-gray-100 py-2 px-4 rounded inline-flex items-center transition">
-              <svg class="w-4 mr-2" inline xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span class="text-sm">New</span>
-            </button>
-          </div>
+    <div id="app" class="container mx-auto">
+        <div v-if="authenticated === true">
+            <h2 class="logout-header">
+                <img src="img/user.svg" alt="User Icon" class="user-icon">
+                {{username}}· 
+                <span class="logout-text" @click="logout">Logout</span>
+            </h2>
+            <div class="container-ClientNew">
+                <div class="flex flex-row flex-auto items-center p-3 px-5 border border-b-2 border-gray-100">
+                    <div class="flex-grow text-center">
+                        <h1 class="device-title text-2xl font-bold">
+                            <img src="img/cellphone.svg" alt="Cellphone" class="device-icon">
+                            <img src="img/tablet.svg" alt="Tablet" class="device-icon">
+                            <img src="img/desktop.svg" alt="Desktop" class="device-icon">
+                        </h1>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div @click="clientCreate = true; clientCreateName = '';" class="add-device-text" title="Add New Device">
+                            Add New Device
+                        </div>
+                    </div>
+                </div>
+
+                <div class="div-client">
+                    <div v-if="clients && clients.length > 0" v-for="client in clients" :key="client.name" class="p-5 flex flex-row device-item">
+                        <div class="h-10 w-10 mr-5 rounded-full bg-gray-50 relative">
+                            <img v-if="client.avatar" :src="client.avatar" class="w-10 rounded-full absolute top-0 left-0" />
+
+                            <div v-if="client.latestHandshake && ((new Date() - new Date(client.latestHandshake) < 1000 * 60 * 10))">
+                                <div class="animate-ping w-4 h-4 p-1 bg-green-100 rounded-full absolute -bottom-1 -right-1"></div>
+                                <div class="w-2 h-2 bg-green-300 rounded-full absolute bottom-0 right-0"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow device-details">
+                            <div class="device-name" :title="'Created at ' + dateTime(new Date(client.createdAt))">
+                                {{client.name}}
+                            </div>
+                            <div v-if="client.allowedIps" class="text-gray-300 text-xs strong-green"><span class="strong-green">{{client.allowedIps.split('/')[0]}}</span> <span v-if="client.transferTx" title="Download">· {{client.transferTx | bytes}}</span> <span v-if="client.transferRx" title="Upload">· {{client.transferRx | bytes}}</span> <span v-if="client.latestHandshake" :title="'Last seen at ' + dateTime(new Date(client.latestHandshake))">· {{new Date(client.latestHandshake) | timeago}}</span>
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <div class="text-gray-400">
+                                <!-- Active State Button -->
+                                <button @click="disableClient(client)" v-if="client.enabled === true" title="Enabled" class="toggle-button bg-green-400 hover:bg-green-500">
+                                    <img src="img/on_off.svg" alt="Toggle" class="toggle-icon">
+                                </button>
+
+                                <!-- Inactive State Button -->
+                                <button @click="enableClient(client)" v-if="client.enabled === false" title="Disabled" class="toggle-button bg-red-400 hover:bg-red-500">
+                                    <img src="img/on_off.svg" alt="Toggle" class="toggle-icon">
+                                </button>
+
+                                <!-- Show QR -->
+                                <img @click="qrcode = `/api/wireguard/client/${client.name}/qrcode.svg`" src="img/qr.svg" class="icon cursor-pointer" title="Show QR Code">
+
+                                <!-- Download Configuration -->
+                                <img @click="downloadFile(client.name)" src="img/download.svg" class="icon cursor-pointer" title="Download Wireguard Desktop Configuration">
+
+                                <!-- Delete -->
+                                <img @click="clientDelete = client" src="img/delete.svg" class="icon cursor-pointer" title="Delete Device">
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="clients && clients.length === 0">
+                        <p class="text-center m-10 text-gray-400 text-sm">There are no devices yet.<br /><br />
+                            <div @click="clientCreate = true; clientCreateName = '';" class="add-device-text" title="Add New Device">
+                                Add New Device
+                            </div>
+                        </p>
+                    </div>
+                    <div v-if="clients === null" class="text-gray-200 p-5"></div>
+                </div>
+            </div>
+
+            <!-- Modal Structure for New Device -->
+            <div v-if="clientCreate" class="modal-overlay" @click.self="clientCreate = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">New Device</h2>
+                        <button class="modal-close" @click="clientCreate = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <input class="mt-4 p-3 w-full border rounded" type="text" v-model.trim="clientCreateName" placeholder="Device Name" />
+                    </div>
+                    <div class="modal-footer mt-6 flex justify-end">
+                        <button v-if="clientCreateName.length" @click="createClient(); clientCreate = false;" class="modal-button">Create</button>
+                        <button @click="clientCreate = false" class="modal-button ml-2">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Modal -->
+            <div v-if="qrcode" class="modal-overlay">
+                <div class="modal-content">
+                    <button @click="qrcode = null" class="modal-close">×</button>
+                    <img :src="qrcode" class="w-full max-w-xs mx-auto qr-code-half-size" />
+                </div>
+            </div>
+
+            <!-- Delete Dialog -->
+            <div v-if="clientDelete" class="modal-overlay">
+                <div class="modal-content">
+                    <h3 class="modal-title text-center">Delete Device</h3>
+                    <p class="mt-4 text-center">Are you sure you want to delete <strong>{{clientDelete.name}}</strong>? This action cannot be undone.</p>
+                    <div class="modal-footer mt-6 flex justify-center">
+                        <button @click="deleteClient(clientDelete); clientDelete = null" class="modal-button bg-red-600 hover:bg-red-700 text-white">Delete</button>
+                        <button @click="clientDelete = null" class="modal-button bg-gray-300 hover:bg-gray-400 text-gray-700 ml-2">Cancel</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div>
-          <div v-if="clients && clients.length > 0" v-for="client in clients" :key="client.name" class="p-5 flex flex-row">
-            <div class="h-10 w-10 mr-5 rounded-full bg-gray-50 relative">
-              <svg class="w-6 m-2 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                fill="currentColor">
-                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-              </svg>
-              <img v-if="client.avatar" :src="client.avatar" class="w-10 rounded-full absolute top-0 left-0" />
+        <div v-if="authenticated === false">
+            <form @submit="login" class="sign-form">
+                <img src="img/vpn.svg" alt="VPN Icon" class="form-icon">
+                <input type="text" name="username" placeholder="User" v-model="username" class="form-input" required />
+                <input type="password" name="password" placeholder="Password" v-model="password" class="form-input" required />
+                <input type="text" name="multiFactorAuthCode" v-if="useMfa" placeholder="2FA Code" v-model="multiFactorAuthCode" class="form-input" />
 
-              <div v-if="client.latestHandshake && ((new Date() - new Date(client.latestHandshake) < 1000 * 60 * 10))">
-                <div class="animate-ping w-4 h-4 p-1 bg-green-100 rounded-full absolute -bottom-1 -right-1"></div>
-                <div class="w-2 h-2 bg-green-300 rounded-full absolute bottom-0 right-0"></div>
-              </div>
-            </div>
-
-            <div class="flex-grow">
-              <div class="text-gray-700" :title="'Created at ' + dateTime(new Date(client.createdAt))">{{client.name}}
-              </div>
-              <div v-if="client.allowedIps" class="text-gray-300 text-xs">{{client.iface}}
-                · {{client.allowedIps.split('/')[0]}}
-                <span v-if="client.transferTx" title="Download">
-                  ·
-                  <svg class="align-middle h-3 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                    fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{client.transferTx | bytes}}
-                </span>
-                <span v-if="client.transferRx" title="Upload">
-                  ·
-                  <svg class="align-middle h-3 inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                    fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
-                  {{client.transferRx | bytes}}
-                </span>
-                <span v-if="client.latestHandshake"
-                  :title="'Last seen at ' + dateTime(new Date(client.latestHandshake))">
-                  · {{new Date(client.latestHandshake) | timeago}}
-                </span>
-              </div>
-            </div>
-
-            <div class="text-right">
-              <div class="text-gray-400">
-
-                <!-- Enable/Disable -->
-                <div @click="disableClient(client)" v-if="client.enabled === true" class="inline-block align-middle rounded-full w-10 h-6 mr-1 bg-green-400 cursor-pointer hover:bg-green-500 transition-all">
-                  <div class="rounded-full w-4 h-4 m-1 ml-5 bg-white"></div>
-                </div>
-                <div @click="enableClient(client)" v-if="client.enabled === false" class="inline-block align-middle rounded-full w-10 h-6 mr-1 bg-gray-200 cursor-pointer hover:bg-gray-300 transition-all">
-                  <div class="rounded-full w-4 h-4 m-1 bg-white"></div>
-                </div>
-
-                <!-- Show QR-->
-                <button class="align-middle bg-gray-100 hover:bg-blue-400 hover:text-white p-2 rounded transition"
-                  title="Show QR Code" @click="qrcode = `/api/wireguard/client/${client.name}/qrcode.svg`">
-                  <svg class="w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                  </svg>
-                </button>
-
-                <!-- Download Config -->
-                <a :href="'/api/wireguard/client/' + client.name + '/configuration'" download
-                  class="align-middle inline-block bg-gray-100 hover:bg-blue-400 hover:text-white p-2 rounded transition"
-                  title="Download Configuration">
-                  <svg class="w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                </a>
-
-                <!-- Delete -->
-                <button class="align-middle bg-gray-100 hover:bg-red-400 hover:text-white p-2 rounded transition"
-                  title="Delete Client" @click="clientDelete = client">
-                  <svg class="w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                      clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-          </div>
-          <div v-if="clients && clients.length === 0">
-            <p class="text-center m-10 text-gray-400 text-sm">There are no clients yet.<br /><br />
-              <button @click="clientCreate = true; clientCreateName = '';"
-                class="bg-green-400 text-white hover:bg-green-500 border-2 border-none py-2 px-4 rounded inline-flex items-center transition">
-                <svg class="w-4 mr-2" inline xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span class="text-sm">New Client</span>
-              </button>
-            </p>
-          </div>
-          <div v-if="clients === null" class="text-gray-200 p-5">
-            <svg class="w-5 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
+                <button v-if="authenticating" class="authenticating-button">Authenticating...</button>
+                <input v-if="!authenticating && password" type="submit" class="submit-button" value="Sign In">
+                <input v-if="!authenticating && !password" type="submit" class="submit-button" value="Sign In">
+            </form>
         </div>
-      </div>
 
-      <!-- QR Code-->
-      <div v-if="qrcode">
-        <div class="bg-black bg-opacity-50 fixed top-0 right-0 left-0 bottom-0 flex items-center justify-center">
-          <div class="bg-white rounded-md shadow-lg relative p-8">
-            <button @click="qrcode = null" class="absolute right-4 top-4 text-gray-600 hover:text-gray-800">
-              <svg class="w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <img :src="qrcode" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Create Dialog -->
-      <div v-if="clientCreate" class="fixed z-10 inset-0 overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <!--
-        Background overlay, show/hide based on modal state.
-
-        Entering: "ease-out duration-300"
-          From: "opacity-0"
-          To: "opacity-100"
-        Leaving: "ease-in duration-200"
-          From: "opacity-100"
-          To: "opacity-0"
-      -->
-          <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-          </div>
-
-          <!-- This element is to trick the browser into centering the modal contents. -->
-          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-          <!--
-        Modal panel, show/hide based on modal state.
-
-        Entering: "ease-out duration-300"
-          From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-          To: "opacity-100 translate-y-0 sm:scale-100"
-        Leaving: "ease-in duration-200"
-          From: "opacity-100 translate-y-0 sm:scale-100"
-          To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-      -->
-          <div
-            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-            role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div class="sm:flex sm:items-start">
-                <div
-                  class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <svg class="h-6 w-6 text-green-600" inline xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <div class="flex-grow mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                    New Client
-                  </h3>
-                  <div class="mt-2">
-                    <p class="text-sm text-gray-500">
-                      <input class="rounded p-2 border-2 border-gray-100 focus:border-green-200 outline-none w-full"
-                        type="text" v-model.trim="clientCreateName" placeholder="Name" />
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button v-if="clientCreateName.length" type="button" @click="createClient(); clientCreate = null"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-400 text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
-                Create
-              </button>
-              <button v-else type="button"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-200 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm cursor-not-allowed">
-                Create
-              </button>
-              <button type="button" @click="clientCreate = null"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Delete Dialog -->
-      <div v-if="clientDelete" class="fixed z-10 inset-0 overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <!--
-        Background overlay, show/hide based on modal state.
-
-        Entering: "ease-out duration-300"
-          From: "opacity-0"
-          To: "opacity-100"
-        Leaving: "ease-in duration-200"
-          From: "opacity-100"
-          To: "opacity-0"
-      -->
-          <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-          </div>
-
-          <!-- This element is to trick the browser into centering the modal contents. -->
-          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-          <!--
-        Modal panel, show/hide based on modal state.
-
-        Entering: "ease-out duration-300"
-          From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-          To: "opacity-100 translate-y-0 sm:scale-100"
-        Leaving: "ease-in duration-200"
-          From: "opacity-100 translate-y-0 sm:scale-100"
-          To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-      -->
-          <div
-            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-            role="dialog" aria-modal="true" aria-labelledby="modal-headline">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div class="sm:flex sm:items-start">
-                <div
-                  class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <!-- Heroicon name: outline/exclamation -->
-                  <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                    Delete Client
-                  </h3>
-                  <div class="mt-2">
-                    <p class="text-sm text-gray-500">
-                      Are you sure you want to delete <strong>{{clientDelete.name}}</strong>?
-                      This action cannot be undone.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button type="button" @click="deleteClient(clientDelete); clientDelete = null"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                Delete
-              </button>
-              <button type="button" @click="clientDelete = null"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        <div v-if="authenticated === null" class="text-gray-300 pt-24 pb-12"></div>
     </div>
 
-    <div v-if="authenticated === false">
-      <h1 class="text-4xl font-medium my-16 text-gray-700 text-center">PiVPN Web</h1>
-
-      <form
-        @submit="login"
-        class="shadow rounded-md bg-white mx-auto w-64 p-5 overflow-hidden mt-10"
-      >
-        <!-- Avatar -->
-        <div class="h-20 w-20 mb-10 mt-5 mx-auto rounded-full bg-gray-100 relative overflow-hidden">
-          <svg class="w-10 h-10 m-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-            fill="currentColor">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-          </svg>
+    <footer>
+        <div class="footer-content">
+            <a href="https://www.myhousevpn.com" target="_blank"><img src="img/logo_v2.png" alt="MyHouseVPN LOGO V2"></a>
+            <h3><p>“Securing Your Digital Future Today”</p></h3>
         </div>
+    </footer>
 
-        <input type="text" name="username" placeholder="User" v-model="username" class="px-2 py-1 text-sm text-gray-500 mb-2 border-2 border-gray-100 rounded-lg w-full focus:border-green-400 outline-none" />
-        <input type="password" name="password" placeholder="Password" v-model="password" class="px-2 py-1 text-sm text-gray-500 mb-5 border-2 border-gray-100 rounded-lg w-full focus:border-green-400 outline-none" />
-        <input type="text" name="multiFactorAuthCode" v-if="useMfa" placeholder="2FA Code" v-model="multiFactorAuthCode" class="px-2 py-1 text-sm text-gray-500 mb-5 border-2 border-gray-100 rounded-lg w-full focus:border-green-400 outline-none" />
+    <script src="/js/vendor/vue.min.js"></script>
+    <script src="/js/vendor/md5.min.js"></script>
+    <script src="/js/vendor/timeago.min.js"></script>
+    <script src="/js/pivpn.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        function downloadFile(clientName) {
+            const url = '/api/wireguard/client/' + clientName + '/configuration';
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    // Set the MIME type to 'application/octet-stream' to force download
+                    const file = new Blob([blob], { type: 'application/octet-stream' });
+                    const filename = clientName + '.conf';
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(file);
+                    link.setAttribute('download', filename);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                })
+                .catch(error => {
+                    console.error('Error downloading configuration:', error);
+                });
+        }
 
-        <button v-if="authenticating" class="bg-green-400 w-full rounded shadow py-2 text-sm text-white cursor-not-allowed">
-          <svg class="w-5 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </button>
-        <input v-if="!authenticating && username && password" type="submit" class="bg-green-400 w-full rounded shadow py-2 text-sm text-white hover:bg-green-500 transition cursor-pointer" value="Sign In">
-        <input v-if="!authenticating && (!username || !password)" type="submit" class="bg-gray-200 w-full rounded shadow py-2 text-sm text-white cursor-not-allowed" value="Sign In">
-      </form>
-    </div>
+        function redirectToPort80() {
+            const currentUrl = window.location.hostname;
+            window.location.href = `http://${currentUrl}:80`;
+        }
 
-    <div v-if="authenticated === null" class="text-gray-300 pt-24 pb-12">
+        function enableClient(client) {
+            client.enabled = true;
+            // Add your enabling logic here
+        }
 
-      <svg class="w-5 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      
-    </div>
-
-  </div>
-
-  <script src="/js/vendor/vue.min.js"></script>
-  <script src="/js/vendor/md5.min.js"></script>
-  <script src="/js/vendor/timeago.min.js"></script>
-  <script src="/js/pivpn.js"></script>
-  <script src="/js/app.js"></script>
+        function disableClient(client) {
+            client.enabled = false;
+            // Add your disabling logic here
+        }
+    </script>
 </body>
 
 </html>

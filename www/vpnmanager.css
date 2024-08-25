@@ -1,0 +1,513 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    color: #000;
+    font-size: 18px;
+}
+
+/* Header styles */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: black;
+    padding: 30px;
+    color: white;
+    text-align: center;
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+/* Styles for the logo container */
+.logo {
+    width: 48px;
+    height: 48px;
+}
+
+/* Button styles */
+button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    color: white;
+    background-color: hsl(295, 98%, 48%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:hover {
+    background-color: hsl(295, 98%, 40%);
+}
+
+/* Custom toggle button styles */
+.toggle-button {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    border: none;
+}
+
+.toggle-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Device list and form styles */
+.div-client {
+    width: 100%;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    color: #000;
+    background-color: #f7f7f7;
+}
+
+/* Device item styles */
+.device-item {
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+/* Device details */
+.device-details {
+    font-family: Arial, sans-serif;
+}
+
+.device-name {
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+}
+
+/* Add New Device Text */
+.add-device-text {
+    color: hsl(295, 98%, 48%);
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease-in-out;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+.add-device-text:hover {
+    color: hsl(295, 98%, 40%);
+    text-decoration: underline;
+}
+
+/* Strong green color for device details */
+.strong-green {
+    color: #38a169;
+    font-weight: bold;
+}
+
+/* Center the Devices H1 with the icons */
+.device-title {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    flex-direction: row; /* Always align items horizontally */
+}
+
+.device-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* Additional styles for enabled state */
+.enabled {
+    filter: hue-rotate(120deg);
+    background-color: green;
+}
+
+/* Additional styles for disabled state */
+.disabled {
+    filter: grayscale(100%);
+    opacity: 0.5;
+    background-color: red;
+}
+
+/* Input textbox styles */
+input[type="text"],
+input[type="password"],
+input[type="submit"] {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    color: #000;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="submit"]:focus {
+    border-color: #38a169;
+    outline: none;
+}
+
+/* Form container styles */
+.sign-form {
+    background-color: #f7f7f7;
+    width: 100%;
+    max-width: 350px;
+    padding: 30px;
+    margin: 0 auto;
+    margin-top: 60px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.form-icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 30px;
+}
+
+.authenticating-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #a0aec0;
+    color: white;
+    font-size: 16px;
+    cursor: not-allowed;
+    transition: background-color 0.3s;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: hsl(295, 98%, 48%);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: hsl(295, 98%, 40%);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.modal-close {
+    cursor: pointer;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: #999;
+    padding: 0;
+}
+
+.modal-close:hover {
+    color: red;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-button:hover {
+    background-color: hsl(295, 98%, 40%);
+}
+
+/* Smaller QR Code */
+.qr-code-half-size {
+    max-width: 50%;
+}
+
+/* Responsive layout adjustments */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header-title {
+        font-size: 2rem;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 1.1em;
+    }
+
+    .toggle-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .toggle-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .device-title {
+        /* No need to change flex-direction, it will stay row */
+        flex-direction: row;
+    }
+
+    .device-icon {
+        margin-left: 10px;
+        margin-top: 0; /* Ensure icons stay aligned horizontally */
+    }
+
+    .modal-content {
+        padding: 15px;
+        max-width: 90%;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+    }
+
+    .modal-close {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .device-title {
+        /* No need to change flex-direction, it will stay row */
+        flex-direction: row;
+    }
+
+    .device-icon {
+        width: 2rem;
+        height: 2rem;
+        margin-left: 10px; /* Adjust margin for smaller screens */
+        margin-top: 0; /* Ensure icons stay aligned horizontally */
+    }
+
+    .toggle-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .toggle-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .sign-form {
+        padding: 20px;
+        max-width: 280px;
+    }
+
+    .form-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 20px;
+    }
+
+    .authenticating-button, .submit-button {
+        font-size: 14px;
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 1em;
+    }
+
+    .modal-content {
+        padding: 10px;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+
+    .modal-close {
+        font-size: 1.5rem;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="submit"] {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+/* Footer styles */
+footer {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-content img {
+    max-width: 200px;
+    height: auto;
+    margin-right: 40px;
+}
+
+.footer-content p {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-content img {
+        margin-bottom: 10px;
+    }
+}
+
+/* Base styles */
+.logout-header {
+    font-size: 1rem; /* Base size of 1rem, scales with root font size */
+    color: hsl(295, 98%, 48%);
+    margin: 0.5rem 1rem; /* Adds some spacing */
+    display: flex;
+    align-items: center; /* Aligns items vertically */
+}
+
+.user-icon {
+    width: 2em; /* Sets icon size relative to the current font size */
+    height: 2em; /* Ensures the icon maintains its aspect ratio */
+    margin-right: 0.5rem; /* Space between the icon and the username */
+}
+
+.logout-text {
+    font-size: 1rem;
+    color: red;
+    cursor: pointer;
+    display: inline-block; /* Ensures proper click area */
+}
+
+.logout-text:hover {
+    text-decoration: underline;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .logout-header {
+        font-size: 0.9rem; /* Slightly smaller on smaller screens */
+        margin: 0.4rem 0.8rem;
+    }
+
+    .user-icon {
+        width: 1.9em;
+        height: 1.9em;
+    }
+
+    .logout-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logout-header {
+        font-size: 0.8rem; /* Smaller font on very small screens */
+        margin: 0.3rem 0.6rem;
+    }
+
+    .user-icon {
+        width: 1.8em;
+        height: 1.8em;
+    }
+
+    .logout-text {
+        font-size: 0.8rem;
+    }
+}
