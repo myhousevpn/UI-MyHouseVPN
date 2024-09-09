@@ -1,7 +1,7 @@
-version: "1.2.0"
+version: "1.3.0"
 services:
   myhousevpn-ui:
-    image: myhousevpn/uimyhousevpn:latest
+    image: myhousevpn/uimyhousevpn:1.3.0
     container_name: myhousevpn-ui
     ports:
       - "51821:51821" # Maps port 51821 on the host to port 51821 in the container
