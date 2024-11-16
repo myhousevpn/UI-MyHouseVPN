@@ -1,4 +1,5 @@
-version: "1.4.0"
+version: "3.9" # Updated Docker Compose version
+
 services:
   myhousevpn-ui:
     image: myhousevpn/uimyhousevpn:1.4
@@ -7,4 +8,4 @@ services:
       - "51821:51821" # Maps port 51821 on the host to port 51821 in the container
     restart: unless-stopped
     environment:
-      DEBUG: "Server,SSH"
+      - DEBUG=Server,SSH
